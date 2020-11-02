@@ -1,14 +1,27 @@
 #include "Arduino_FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
 #include <math.h>
+#include <timers.h>
+#include <queue.h>
+#include <semphr.h>
+#include "task.h"
+
 #include "monitor.h"
+#include "light.h"
 
 /*
 Iuminação = 0
 Umidade = 1
 */
  
+// variavel para sistema de iluminação
+BaseType_t qparameter = pdTRUE;
+// função para testar interrupção por botao
+void handleInterrupt(){
+  enableLight = !enableLight;
+  xQueueSendToFrontFromISR(enable_disable_Q, &enableLight, &qparameter );
+}
+
+
 int minuto = 10000/portTICK_PERIOD_MS;
 
 //Variáveis de umidade
@@ -41,7 +54,7 @@ void imprimir(const char *name, unsigned int value) {
  
 void setup() {
     //Inicializa Serial
-    Serial.begin(9600);
+    Serial.begin(115200);
 
     //PinModes
     pinMode(led_su, OUTPUT);
@@ -63,6 +76,12 @@ void setup() {
                 NULL,               //Parametro
                 1,                  //Prioridade
                 &exaustorH); 
+
+    //setup do sistema de iluminação
+    light_setup();
+    attachInterrupt(digitalPinToInterrupt(2), handleInterrupt , RISING );
+
+    Serial.println("SETUP");
 }
  
 void loop() {
