@@ -29,7 +29,7 @@ void setup() {
   Serial.begin(115200);
   
   light_setup();
-
+  buttons_setup();
   Serial.println("SETUP");
 
   attachInterrupt(digitalPinToInterrupt(2), handleInterrupt , RISING );
