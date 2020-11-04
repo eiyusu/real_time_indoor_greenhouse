@@ -4,6 +4,7 @@
 #include <Arduino_FreeRTOS.h>
 #include <semphr.h>
 #include <timers.h>
+#include <queue.h>
 
 #define LIGHTPIN 5
 #define DARK 0
@@ -13,7 +14,7 @@ TimerHandle_t light_timer;
 bool enableLight = false;
 bool current_light_state = DARK;
 QueueHandle_t enable_disable_Q = xQueueCreate(1, sizeof(bool));
-uint16_t dark_time = pdMS_TO_TICKS(500), light_time = pdMS_TO_TICKS(2000);
+uint16_t times[2] = { pdMS_TO_TICKS(500), pdMS_TO_TICKS(2000)};
 
 
 void light_turn_on(){
@@ -29,7 +30,7 @@ void light_state_toggle(TimerHandle_t xTimer){
   current_light_state = !current_light_state;
   Serial.print("changing current_light_state to: ");
   Serial.println(current_light_state ? "LIGHT" : "DARK");
-  xTimerChangePeriod(xTimer, current_light_state ? light_time : dark_time, 0);
+  xTimerChangePeriod(xTimer, times[current_light_state], 0);
 }
 
 
@@ -56,6 +57,25 @@ void light_enable_disable( void *pv){
   }
 }
 
+
+struct changeValueData {
+  bool alter_state;
+  uint16_t newValue;
+};
+
+void light_change_value(void *pv){
+  
+  struct changeValueData* data;
+
+  for(;;){
+    if( xQueueReceive( enable_disable_Q, data, portMAX_DELAY) == pdPASS ){
+      times[data->alter_state] = data->newValue;
+      if(current_light_state == data->alter_state){
+         xTimerChangePeriod( light_timer, pdMS_TO_TICKS(data->newValue), 0 );
+      }
+    }
+  }
+}
 
 void light_setup(){
     pinMode(LIGHTPIN, OUTPUT);
