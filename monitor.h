@@ -7,11 +7,13 @@
 
 #define LDR 0
 #define IRRIGATION 1
+#define EXA_STATE 2
+#define EXA_IRRIGATION 3
 
-#define SIZE 2
+#define SIZE 4
 
-SemaphoreHandle_t mutex[SIZE] = {xSemaphoreCreateMutex(), xSemaphoreCreateMutex()};
-static uint8_t secureValues[SIZE] = {0, 0};
+SemaphoreHandle_t mutex[SIZE] = {xSemaphoreCreateMutex(), xSemaphoreCreateMutex(), xSemaphoreCreateMutex(), xSemaphoreCreateMutex()};
+static uint8_t secureValues[SIZE] = {0, 0, 0, 0};
 
 
 void set_value(uint8_t value, uint8_t variable){
