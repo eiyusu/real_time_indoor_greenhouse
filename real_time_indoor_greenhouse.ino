@@ -10,11 +10,7 @@
 #include "humidity.h"
 #include "exhauster.h"
 
-#define LDR 0
-#define IRRIGATION 1
-#define EXA_STATE 2
-#define EXA_IRRIGATION 3
- 
+
 // variavel para sistema de iluminação
 BaseType_t qparameter = pdTRUE;
 // função para testar interrupção por botao
@@ -47,6 +43,9 @@ void setup() {
     //Inicializa Serial
     Serial.begin(115200);
 
+    //Inicializa monitor
+    monitor_start();
+
     //set_value(0, EXA_STATE);
     //set_value(0, EXA_IRRIGATION);
 
@@ -59,8 +58,6 @@ void setup() {
 
     //setup do sistema de exaustao 
     exa_setup();
-
-    attachInterrupt(digitalPinToInterrupt(2), handleInterrupt , RISING );
 
     Serial.println("SETUP");
 }
