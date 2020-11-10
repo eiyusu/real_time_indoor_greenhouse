@@ -1,9 +1,8 @@
+#ifndef HUMIDITY_H
+#define HUMIDITY_H
+
 #include "monitor.h"
 
-#define LDR 0
-#define IRRIGATION 1
-#define EXA_STATE 2
-#define EXA_IRRIGATION 3
 
 //Variáveis de umidade
 #define led_bomba 8
@@ -86,3 +85,6 @@ void setup_humidity(){
                 1,                      //Prioridade
                 &leitura_umidadeH);
 }
+
+
+#endif

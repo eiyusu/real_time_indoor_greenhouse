@@ -1,9 +1,8 @@
-#include "monitor.h"
+#ifndef EXHAUSTER_H
+#define EXHAUSTER_H
 
-#define LDR 0
-#define IRRIGATION 1
-#define EXA_STATE 2
-#define EXA_IRRIGATION 3
+
+#include "monitor.h"
 
 //Variáveis do exaustor
 #define led_exaustor 12
@@ -49,3 +48,5 @@ void exa_setup(){
                 1,                  //Prioridade
                 &exaustorH); 
 }
+
+#endif
