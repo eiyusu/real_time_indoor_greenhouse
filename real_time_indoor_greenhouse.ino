@@ -30,6 +30,9 @@ int umidade = 0;
 //Variáveis do exaustor
 int t_exaustor = minuto;
 bool exa_on = false, exaustor_acionado = true;
+
+//Variáveis iluminacao
+bool iluminacao_acionada = false; //fila no light.h? como conversar com isso
  
 void imprimir(char *name, int8_t value) {
        Serial.print("\t\t");

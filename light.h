@@ -10,6 +10,7 @@
 #define DARK 0 // posição no vetor para o tempo de escuro
 #define LIGHT 1 // posição no vetor para o tempo de claro
 
+//Pegar isso no monitor
 uint16_t times[2] = { pdMS_TO_TICKS(500), pdMS_TO_TICKS(2000)}; // tempos em cada estado
 TimerHandle_t light_timer; // timer do sistema 
 
@@ -67,7 +68,7 @@ void light_enable_disable( void *pv){
 // estrutura do valor que dee ser passado para a fila de mudaça do valor dos tempos de claro e escuro
 struct changeValueData {
   bool alter_state; // estado sendo alterado
-  uint16_t newValue; // noo valor
+  uint16_t newValue; // novo valor
 };
 
 void light_change_value(void *pv){
@@ -79,7 +80,7 @@ void light_change_value(void *pv){
     if( xQueueReceive( enable_disable_Q, data, portMAX_DELAY) == pdPASS ){
       times[data->alter_state] = data->newValue; //mudando valor no vetor
       if(current_light_state == data->alter_state){
-         xTimerChangePeriod( light_timer, pdMS_TO_TICKS(data->newValue), 0 ); //se o alor sendo mudado é o do estado atual, alterar tbm o timer
+         xTimerChangePeriod( light_timer, pdMS_TO_TICKS(data->newValue), 0 ); //se o valor sendo mudado é o do estado atual, alterar tbm o timer
       }
     }
   }

@@ -9,6 +9,7 @@
 #define IRRIGATION 1
 #define EXA_STATE 2
 #define EXA_IRRIGATION 3
+//#define PIN_ILUMINACAO 4
 
 //tamanho do vetor de mutex
 #define SIZE 4
