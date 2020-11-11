@@ -10,10 +10,9 @@
 #define EXA_STATE 2
 #define EXA_IRRIGATION 3
 
-// Pinos
-#define PIN_ILUMINACAO 0
-#define PIN_BOMBA 1
-#define PIN_EXAUSTOR 2
+#define PIN_ILUMINACAO 4
+#define PIN_BOMBA 5
+#define PIN_EXAUSTOR 6
 
 //tamanho do vetor de mutex
 #define SIZE 7

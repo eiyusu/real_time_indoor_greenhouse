@@ -20,21 +20,19 @@
 //pino com capacidade de interrupção
 #define INTERRUPT 2
 
-uint8_t buttons_pins[4] = {UPPIN, DOWNPIN, LEFTPIN, RIGHTPIN};//vetor com os pinos definidos
+const uint8_t buttons_pins[4] PROGMEM  = {UPPIN, DOWNPIN, LEFTPIN, RIGHTPIN};//vetor com os pinos definidos
 
-unsigned long lastFire = 0; // variavel para fazer o debouce do botao (evitar um pouco do ruido quando a gente aperta o botao)
 
 /*
 	fila para identiicar o aperto de um botao
 	***talvez aumentar o tamanho dela para bufferizar apertos sequenciais 
 */
 QueueHandle_t button_press = xQueueCreate(1, sizeof(uint8_t)); 
-BaseType_t qparameter = pdTRUE; // parametro necessário para criar fila
 
 
 //Coloca botoes no modo de identificar quem foi apertado
 void configureDistinct() {
- int i = 0;
+ uint8_t i = 0;
  pinMode(INTERRUPT, OUTPUT);
  digitalWrite(INTERRUPT, LOW);
  for (i = 0; i < sizeof(buttons_pins) / sizeof(uint8_t); i++) {
@@ -45,7 +43,7 @@ void configureDistinct() {
 
 //Coloca botoes no modo de espera por aperto
 void configureCommon() {
- int i = 0;
+ uint8_t i = 0;
  pinMode(INTERRUPT, INPUT_PULLUP);
  for (i = 0; i < sizeof(buttons_pins) / sizeof(uint8_t); i++) {
    pinMode(buttons_pins[i], OUTPUT);
@@ -56,10 +54,8 @@ void configureCommon() {
 
 //função que irá ser chamada para tratar a interrupção causada pelo aperto de um botao
 void button_interrupt(){
-	int i = 0;
+	uint8_t i = 0;
 	//verificação para falso click (ruido no aperto)
-	if (millis() - lastFire >= 100) { 	
-		lastFire = millis();
 
 		configureDistinct(); // colocar todos os botoes na configuração para leitura 
 
@@ -67,41 +63,40 @@ void button_interrupt(){
 		for (i = 0; i < sizeof(buttons_pins) / sizeof(uint8_t); i++) {
 			if (!digitalRead(buttons_pins[i])) {
 				//adicionar informação na fila
-				xQueueSendToFrontFromISR(button_press, &i, &qparameter );
-				Serial.println("oioio");
+				xQueueSendToFrontFromISR(button_press, &i, (BaseType_t *)pdTRUE );
+				// Serial.println("Interrupção --> Lendo botoes");
 			}
 		}
 		configureCommon();
   }
-}
 
 //tarefa só pra testar se ta funcionando
-void testTask(void *pv){
+// void testTask(void *pv){
   
-  int data;
+//   int data;
 
-  for(;;){
-    if( xQueueReceive( button_press, &data, portMAX_DELAY) == pdPASS ){
-		Serial.println("IN TASK");
-			Serial.println(data);
-		}
-	}
+//   for(;;){
+//     if( xQueueReceive( button_press, &data, portMAX_DELAY) == pdPASS ){
+// 		Serial.println("IN TASK");
+// 			Serial.println(data);
+// 		}
+// 	}
 
-}
+// }
 
 //função para ser chamada no setup do arduino
 void buttons_setup(){
 		configureCommon();
     attachInterrupt(digitalPinToInterrupt(INTERRUPT), button_interrupt, FALLING);
 
-		xTaskCreate(
-        testTask, // Task function
-        "testTask", // Task name for humans
-        128, 
-        NULL, // Task parameter
-        1, // Task priority
-        NULL
-    );
+		// xTaskCreate(
+    //     testTask, // Task function
+    //     "testTask", // Task name for humans
+    //     128, 
+    //     NULL, // Task parameter
+    //     1, // Task priority
+    //     NULL
+    // );
 }
 
 #endif

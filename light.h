@@ -14,8 +14,8 @@
 uint16_t times[2] = { pdMS_TO_TICKS(500), pdMS_TO_TICKS(2000)}; // tempos em cada estado
 TimerHandle_t light_timer; // timer do sistema 
 
-bool enableLight = false; // status se o sistema está ativo ou não
-bool current_light_state = DARK; // estado atual do sistema (CLARO OU ESCURO)
+static bool enableLight = false; // status se o sistema está ativo ou não
+static bool current_light_state = DARK; // estado atual do sistema (CLARO OU ESCURO)
 QueueHandle_t enable_disable_Q = xQueueCreate(1, sizeof(bool)); // fila de comunicação para atiação e desatiação do sistema
 
 
@@ -99,8 +99,8 @@ void light_setup(){
 
     xTaskCreate(
         light_enable_disable, // implementação da task
-        "light_start_stop", // nome para debug
-        128, // espaço reservado na memoria
+        "light_s", // nome para debug
+        95, // espaço reservado na memoria
         NULL, // parametro para ser passado para task 
         1, // prioridade da task
         NULL //handler para manipulação da task

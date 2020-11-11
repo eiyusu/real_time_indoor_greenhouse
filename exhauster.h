@@ -4,37 +4,40 @@
 
 #include "monitor.h"
 
-//Variáveis do exaustor
+#define t_exhauster 10000/portTICK_PERIOD_MS
+
+#ifndef led_exaustor
 #define led_exaustor 2
+#endif
 
-extern int t_exaustor;
-extern bool exaustor_acionado;
+//Variáveis do exaustor
+static bool exaustor_acionado = true;
 
-TaskHandle_t        exaustorH;
 
 void exaustor(void *arg){
-    unsigned long int init_time, end_time, resp_time; 
-    while(1){
+    // unsigned long int init_time, end_time, resp_time; 
+    
+    for(;;){
         if(exaustor_acionado){
-            init_time = micros();
+            // init_time = micros();
+            
             // digitalWrite no exaustor deve seguir a exclusão mútua com prioridade para a umidade (fazer no monitor)
             if(get_value(EXA_STATE)==1 && get_value(EXA_IRRIGATION)==0){
                 set_value(0, EXA_STATE);
                 digitalWrite(led_exaustor, LOW);
-                Serial.println("Desligar Exaustor"); 
+                // Serial.println("Desligar Exaustor"); 
             }
             else if(get_value(EXA_STATE)==0 && get_value(EXA_IRRIGATION)==0){
                 set_value(1, EXA_STATE);
                 digitalWrite(led_exaustor, HIGH);
-                Serial.println("Ligar Exaustor"); 
+                // Serial.println("Ligar Exaustor"); 
             }
-            end_time = micros();
-            resp_time = end_time - init_time;
-            imprimir("Resposta Exaustor (us)", resp_time);
-            vTaskDelay(t_exaustor);
+            // end_time = micros();
+            // resp_time = end_time - init_time;
+            // imprimir("Resposta Exaustor (us)", resp_time);
+            vTaskDelay(t_exhauster);
         }   
     }
-    vTaskDelete(NULL);      //Deleta a Task atual
 }
 
 void exa_setup(){
@@ -43,10 +46,10 @@ void exa_setup(){
     //Crição da task de leitura de exaustao
     xTaskCreate(exaustor,           //Funcao
                 "exaustor",         //Nome
-                128,                //Pilha
+                95,                //Pilha
                 NULL,               //Parametro
                 1,                  //Prioridade
-                &exaustorH); 
+                NULL); 
 }
 
 #endif

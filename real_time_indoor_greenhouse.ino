@@ -19,28 +19,15 @@ void imprimir(char *name, unsigned long value) {
 #include "light.h"
 #include "humidity.h"
 #include "exhauster.h"
+#include "buttons.h"
+// #include "ldr.h"
 
 
-// variavel para sistema de iluminação
-BaseType_t qparameter = pdTRUE;
 // função para testar interrupção por botao
 void handleInterrupt(){
   enableLight = !enableLight;
-  xQueueSendToFrontFromISR(enable_disable_Q, &enableLight, &qparameter );
+  xQueueSendToFrontFromISR(enable_disable_Q, &enableLight, (BaseType_t *) pdTRUE );
 }
-
-
-int minuto = 10000/portTICK_PERIOD_MS;
-
-//Variáveis de umidade
-int config_umidade = 50;
-bool umidade_acionada = true, exa_umi = false;
-int umidade = 0;
-
-//Variáveis do exaustor
-int t_exaustor = minuto;
-bool exa_on = false, exaustor_acionado = true;
- 
 
 void setup() {
     //Inicializa Serial
@@ -48,6 +35,11 @@ void setup() {
 
     //Inicializa monitor
     monitor_start();
+
+    buttons_setup();
+    //set_value(0, EXA_STATE);
+    //set_value(0, EXA_IRRIGATION);
+
 
     //setup do sistema de iluminação
     light_setup();
@@ -58,7 +50,7 @@ void setup() {
     //setup do sistema de exaustao 
     exa_setup();
 
-    Serial.println("SETUP");
+    // Serial.println("SETUP");
 }
  
 void loop() {
