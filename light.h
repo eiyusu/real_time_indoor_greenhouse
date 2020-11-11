@@ -49,6 +49,12 @@ Quando isso ocorre ela olha esse valor e desabilita ou habilita o timer
 void light_enable_disable( void *pv){
   bool L; //buffer para guardar valor que vem da fila
   for(;;){
+
+    Serial.print("\n\n- TASK ");
+    Serial.print(pcTaskGetName(NULL)); 
+    Serial.print(", High Watermark: ");
+    Serial.print(uxTaskGetStackHighWaterMark(NULL));
+
     //Aguardar receber conteudo da fila. Então salvar esse conteudo na variavel L
     if ( xQueueReceive( enable_disable_Q, &L, portMAX_DELAY) == pdPASS) {
       

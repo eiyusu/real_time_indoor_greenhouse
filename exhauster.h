@@ -18,6 +18,12 @@ void exaustor(void *arg){
     // unsigned long int init_time, end_time, resp_time; 
     
     for(;;){
+
+    Serial.print("\n\n- TASK ");
+    Serial.print(pcTaskGetName(NULL)); 
+    Serial.print(", High Watermark: ");
+    Serial.print(uxTaskGetStackHighWaterMark(NULL));
+
         if(exaustor_acionado){
             // init_time = micros();
             

@@ -23,6 +23,13 @@ void leitura_umidade(void *arg){
     // unsigned long int init_time, end_time, resp_time; 
     
     for(;;) {
+
+        Serial.print("\n\n- TASK ");
+        Serial.print(pcTaskGetName(NULL)); 
+        Serial.print(", High Watermark: ");
+        Serial.print(uxTaskGetStackHighWaterMark(NULL));
+
+
         if(umidade_acionada){
             // init_time = millis();
             
