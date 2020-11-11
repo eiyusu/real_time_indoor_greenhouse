@@ -12,8 +12,8 @@
 #define t_humidity 10000/portTICK_PERIOD_MS
 
 //Variáveis externas
-static uint8_t config_umidade = 50;
-static bool umidade_acionada = true;
+static uint8_t config_umidade = 50; // apagar
+static bool umidade_acionada = true, bomba_acionada = false;
 static uint8_t umidade = 0;
 
 
@@ -39,7 +39,7 @@ void leitura_umidade(void *arg){
             lock(IRRIGATION);
             umidade = map(analogRead(sensor_umidade), 0, 1023, 0, 100);
             unlock(IRRIGATION);
-            imprimir("Umidade", umidade);       
+            // imprimir("Umidade", umidade);       
             
             //Umidade dentro do configurado
             if(umidade >= config_umidade-5 && umidade <= config_umidade+5){ 
@@ -51,13 +51,15 @@ void leitura_umidade(void *arg){
                 Serial.println("\t\tUmidade baixa");
                 // Reserva recurso BOMBA, liga a bomba e avisa que ela foi ligada, depois libera
                 lock(PIN_BOMBA);
-                digitalWrite(led_bomba, HIGH);            
+                digitalWrite(led_bomba, HIGH);  
+                bomba_acionada = true;          
                 Serial.println("\t\tBomba ligada"); 
                 unlock(PIN_BOMBA);
                 vTaskDelay(t_humidity/4);                     //Bloqueia a task por uma período para retornar e desligar a bomba
                 // Reserva recurso BOMBA, liga a bomba e avisa que ela foi ligada, depois libera
                 lock(PIN_BOMBA);
-                digitalWrite(led_bomba, LOW);            
+                digitalWrite(led_bomba, LOW);    
+                bomba_acionada = false;        
                 Serial.println("\t\tBomba desligada");
                 unlock(PIN_BOMBA); 
             }       

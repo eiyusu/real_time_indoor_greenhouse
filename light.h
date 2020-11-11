@@ -11,7 +11,7 @@
 #define LIGHT 1 // posição no vetor para o tempo de claro
 
 //Pegar isso no monitor
-uint16_t times[2] = { pdMS_TO_TICKS(500), pdMS_TO_TICKS(2000)}; // tempos em cada estado
+unsigned long times[2] = { 5000, 5000}; // tempos em cada estado
 TimerHandle_t light_timer; // timer do sistema 
 
 static bool enableLight = true; // status se o sistema está ativo ou não
@@ -29,6 +29,7 @@ void light_turn_off(){
     digitalWrite(LIGHTPIN, LOW);
 }
 
+
 /* 
   Alterar o estado atual para o seguinte. 
   Mudar o valor do timer para o valor do estado correspondente
@@ -38,7 +39,7 @@ void light_state_toggle(TimerHandle_t xTimer){
   current_light_state = !current_light_state; //alterando o estado atual
   Serial.print("changing current_light_state to: ");
   Serial.println(current_light_state ? "LIGHT" : "DARK");
-  xTimerChangePeriod(xTimer, times[current_light_state], 0);//alterar valor do timer
+  xTimerChangePeriod(xTimer, pdMS_TO_TICKS(times[current_light_state]), 0);//alterar valor do timer
 }
 
 
@@ -50,10 +51,10 @@ void light_enable_disable( void *pv){
   bool L; //buffer para guardar valor que vem da fila
   for(;;){
 
-    Serial.print("\n\n- TASK ");
-    Serial.print(pcTaskGetName(NULL)); 
-    Serial.print(", High Watermark: ");
-    Serial.print(uxTaskGetStackHighWaterMark(NULL));
+    // Serial.print("\n\n- TASK ");
+    // Serial.print(pcTaskGetName(NULL)); 
+    // Serial.print(", High Watermark: ");
+    // Serial.print(uxTaskGetStackHighWaterMark(NULL));
 
     //Aguardar receber conteudo da fila. Então salvar esse conteudo na variavel L
     if ( xQueueReceive( enable_disable_Q, &L, portMAX_DELAY) == pdPASS) {

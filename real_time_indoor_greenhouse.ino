@@ -6,7 +6,7 @@
 #include "task.h"
 
 
-void imprimir(char *name, unsigned long value) {
+void imprimir(const __FlashStringHelper*name, unsigned long value) {
        Serial.print("\t\t");
        Serial.print(name);
        Serial.print(": ");
@@ -23,33 +23,29 @@ void imprimir(char *name, unsigned long value) {
 #include "ldr.h"
 
 
-// função para testar interrupção por botao
-void handleInterrupt(){
-  enableLight = !enableLight;
-  xQueueSendToFrontFromISR(enable_disable_Q, &enableLight, (BaseType_t *) pdTRUE );
-}
+
 
 void setup() {
     //Inicializa Serial
     Serial.begin(115200);
 
     //Inicializa monitor
-    monitor_start();
+    // monitor_start();
 
+    // light_setup();
     buttons_setup();
     //set_value(0, EXA_STATE);
     //set_value(0, EXA_IRRIGATION);
 
 
     //setup do sistema de iluminação
-    light_setup();
-    ldr_setup();
+    // ldr_setup();
 
     //setup do sistema de umidade
     // humidity_setup();
 
     //setup do sistema de exaustao 
-    exa_setup();
+    // exa_setup();
 
     // Serial.println("SETUP");
 }

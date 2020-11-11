@@ -11,12 +11,6 @@
 static uint8_t a_read_ldr(){
     return map(analogRead(sensor_ldr), 0, 1023, 0, 100);
 } 
-// extern int minuto;
-// extern void imprimir(char *name, int8_t value);
-// extern bool current_light_state;
-// extern void light_turn_on(), void light_turn_off();
-// extern bool enableLight;
-
 
 // Task de leitura do LDR
 void leitura_ldr(void *arg){
@@ -24,25 +18,31 @@ void leitura_ldr(void *arg){
     unsigned long init_time; 
     
     for(;;) {
+
+        Serial.print("\n\n- TASK ");
+        Serial.print(pcTaskGetName(NULL)); 
+        Serial.print(", High Watermark: ");
+        Serial.print(uxTaskGetStackHighWaterMark(NULL));
+        
         if(enableLight){
             init_time = micros();
             // Se estiver claro e estado atual for escuro
             if(a_read_ldr() >= LIMITE && current_light_state == 0){
                 // Monitor
-                //lock(PIN_ILUMINACAO);
+                lock(PIN_ILUMINACAO);
                 light_turn_off();
-                //unlock(PIN_ILUMINACAO);
+                unlock(PIN_ILUMINACAO);
             }
             // Se estiver escuro e o estado for claro
             else if(a_read_ldr() < LIMITE && current_light_state == 1){
                 // Monitor
-                //lock(PIN_ILUMINACAO);
+                lock(PIN_ILUMINACAO);
                 light_turn_on();
-                //unlock(PIN_ILUMINACAO);
+                unlock(PIN_ILUMINACAO);
             }
             // Fora esses dois casos, não precisa de mais atuação
             init_time = micros() - init_time;
-            imprimir("Resposta LDR (us)", init_time);
+            imprimir(F("Resposta LDR (us)"), init_time);
             vTaskDelay(t_ldr);                       //Bloqueia a task
         }
     }
@@ -52,7 +52,7 @@ void leitura_ldr(void *arg){
 void ldr_setup(){
     //Crição da task de leitura do LDR
     xTaskCreate(leitura_ldr,        //Funcao
-                "leitura_ldr",      //Nome
+                NULL,      //Nome
                 90,                    //Pilha
                 NULL,                   //Parametro
                 1,                      //Prioridade

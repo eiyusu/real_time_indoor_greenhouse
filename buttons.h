@@ -4,99 +4,327 @@
 
 #include <Arduino_FreeRTOS.h>
 #include <queue.h>
+#include "monitor.h"
+#include "light.h"
+#include "humidity.h"
+#include "exhauster.h"
 
-//Definições para facilitar identificar botoes
 #define UP 0
 #define DOWN 1
 #define LEFT 2
 #define RIGHT 3
 
 //pinos em que os botoes vao ser usados
-#define UPPIN 13
-#define DOWNPIN 12
-#define LEFTPIN 11
-#define RIGHTPIN 10
+#define UPPIN (const uint8_t) 13
+#define DOWNPIN (const uint8_t) 12
+#define LEFTPIN (const uint8_t) 11
+#define RIGHTPIN (const uint8_t) 10
 
 //pino com capacidade de interrupção
 #define INTERRUPT 2
 
-const uint8_t buttons_pins[4] PROGMEM  = {UPPIN, DOWNPIN, LEFTPIN, RIGHTPIN};//vetor com os pinos definidos
+// Locais de menu
+#define HOME_LIGHT 0
+#define CONFIG_LIGHT_TIME 1
+#define CONFIG_DARK_TIME 2
+#define HOME_HUMIDITY 3
+#define CONFIG_HUMIDITY 4
+#define HOME_EXHAUSTER 5
 
 
-/*
-	fila para identiicar o aperto de um botao
-	***talvez aumentar o tamanho dela para bufferizar apertos sequenciais 
-*/
-QueueHandle_t button_press = xQueueCreate(1, sizeof(uint8_t)); 
+
+const uint8_t buttons_pins[4] PROGMEM = {UPPIN, DOWNPIN, LEFTPIN, RIGHTPIN};
+unsigned long lastFire = 0; //Evitar leituras múltiplas 
+QueueHandle_t button_press = xQueueCreate(1, sizeof(uint8_t));
+BaseType_t qparameter = pdTRUE;
+
+static uint8_t menu_location = HOME_LIGHT;
 
 
-//Coloca botoes no modo de identificar quem foi apertado
 void configureDistinct() {
- uint8_t i = 0;
  pinMode(INTERRUPT, OUTPUT);
  digitalWrite(INTERRUPT, LOW);
- for (i = 0; i < sizeof(buttons_pins) / sizeof(uint8_t); i++) {
+ for (uint8_t i = 0; i < 4; i++) {
    pinMode(buttons_pins[i], INPUT_PULLUP);
  }
 }
 
-
-//Coloca botoes no modo de espera por aperto
 void configureCommon() {
- uint8_t i = 0;
  pinMode(INTERRUPT, INPUT_PULLUP);
- for (i = 0; i < sizeof(buttons_pins) / sizeof(uint8_t); i++) {
+ for (uint8_t i = 0; i < 4; i++) {
    pinMode(buttons_pins[i], OUTPUT);
    digitalWrite(buttons_pins[i], LOW);
  }
 }
 
-
 //função que irá ser chamada para tratar a interrupção causada pelo aperto de um botao
 void button_interrupt(){
 	uint8_t i = 0;
-	//verificação para falso click (ruido no aperto)
+	//verificação para falso click 
+	if (millis() - lastFire >= 30) { 	
+		lastFire = millis();
 
 		configureDistinct(); // colocar todos os botoes na configuração para leitura 
 
 		//ler botoes e achar aquele que foi apertado
-		for (i = 0; i < sizeof(buttons_pins) / sizeof(uint8_t); i++) {
+		for (i = 0; i < 4; i++) {
 			if (!digitalRead(buttons_pins[i])) {
 				//adicionar informação na fila
-				xQueueSendToFrontFromISR(button_press, &i, (BaseType_t *)pdTRUE );
-				// Serial.println("Interrupção --> Lendo botoes");
+				xQueueSendToFrontFromISR(button_press, &i, &qparameter );
+				Serial.println("oioio");
 			}
 		}
 		configureCommon();
   }
+}
 
-//tarefa só pra testar se ta funcionando
-// void testTask(void *pv){
+// Funções de iluminação
+void show_light_data(){
+	const char ON[] PROGMEM= "ON";
+	const char OFF[] PROGMEM= "OFF";
+	const char LI[] PROGMEM= "LIGHT";
+	const char DA[] PROGMEM= "DARK";
+
+	char line_text[16];
+	// lcd.setCursor(1,0);
+	snprintf_P(line_text, sizeof(line_text), PSTR("Enable: %s"), enableLight? ON : OFF);
+	Serial.println(line_text);
+	
+	// lcd.setCursor(0,1);
+	snprintf_P(line_text, sizeof(line_text), PSTR("State: %s"), current_light_state ? LI  : DA);
+	Serial.println(line_text);
+
+}
+
+void enable_disable_light(){
+	enableLight = !enableLight;
+	xQueueSendToFrontFromISR(enable_disable_Q, &enableLight, &qparameter );
+	show_light_data();
+}
+
+void navigateLight(){
+	menu_location = HOME_LIGHT;
+	show_light_data();
+}
+
+void navigateConfigLight(){
+	char line_text[16];
+	menu_location = CONFIG_LIGHT_TIME;
+	snprintf_P(line_text, sizeof(line_text), PSTR("L: %u m"), times[LIGHT]/60000);
+	Serial.println(line_text);
+}
+
+void navigateConfigDark(){
+	char line_text[16];
+	menu_location = CONFIG_DARK_TIME;	
+	// lcd.setCursor(0,1);
+	snprintf_P(line_text, sizeof(line_text), PSTR("D: %u m"), times[DARK]/60000);
+	Serial.println(line_text);
+}
+
+void addLightTime(){
+	// Tempos em millisegundo adicionados, cada aperto soma 30min
+	times[LIGHT]>=43200000 ? NULL : times[LIGHT]+=1800000;
+	navigateConfigLight();
+}
+
+void subLightTime(){
+	// Tempos em millisegundo, cada aperto subtrai 30min
+	times[LIGHT]>=43200000 ? NULL : times[LIGHT]-=1800000;
+	navigateConfigLight();
+}
+
+void addDarkTime(){
+	// Tempos em millisegundo adicionados, cada aperto soma 30min
+	times[DARK]>=43200000 ? NULL : times[DARK]+=1800000;
+	navigateConfigDark();
+}
+
+void subDarkTime(){
+	// Tempos em millisegundo, cada aperto subtrai 30min
+	times[DARK]>=43200000 ? NULL : times[DARK]-=1800000;
+	navigateConfigDark();
+}
+
+// Funções de umidade
+void show_humidity_data(){
+	const char ON[] PROGMEM= "ON";
+	const char OFF[] PROGMEM= "OFF";
+	char line_text[16];
+	// lcd.setCursor(1,0);
+	snprintf_P(line_text, sizeof(line_text), PSTR("Enable: %s"), umidade_acionada ?  ON : OFF);
+	Serial.println(line_text);
+	
+	// lcd.setCursor(0,1);
+	snprintf_P(line_text, sizeof(line_text), PSTR("H: %u%% B:%s"), umidade, bomba_acionada ?  ON : OFF);
+	Serial.println(line_text);	
+
+}
+
+void navigateUmi(){
+	menu_location = HOME_HUMIDITY;
+	show_humidity_data();
+}
+
+// Ativa/desativa umidade
+void enable_disable_humidity(){
+	umidade_acionada = !umidade_acionada;
+
+	if(bomba_acionada){
+		bomba_acionada = !bomba_acionada;
+		digitalWrite(led_bomba, LOW);
+	}
+	if(get_value(EXA_IRRIGATION)==1){
+		lock(PIN_EXAUSTOR);
+        digitalWrite(led_exaustor, LOW);
+		set_value(0, EXA_STATE);
+		set_value(0, EXA_IRRIGATION);
+		unlock(PIN_EXAUSTOR);
+	}
+	show_humidity_data();
+}
+
+void show_config_h_data(){
+	
+	char line_text[16];
+// lcd.setCursor(1,0);
+	snprintf_P(line_text, sizeof(line_text), PSTR("Valor Desejado:"));
+	Serial.println(line_text);
+
+	// lcd.setCursor(0,1);
+	snprintf_P(line_text, sizeof(line_text), PSTR("> %u%%"), config_umidade);
+	Serial.println(line_text);
+}
+
+void navigateConfigHumidity(){
+	menu_location = CONFIG_HUMIDITY;
+	show_config_h_data();
+}
+
+void addHumidity(){
+	config_umidade>=100 ? NULL : config_umidade+=1;
+	show_config_h_data();
+}
+
+void subHumidity(){
+	config_umidade<=0 ? NULL : config_umidade-=1;
+		show_config_h_data();
+}
+
+// Funções de exaustão
+void show_exhauster_data(){
+	const char ON[] PROGMEM= "ON";
+	const char OFF[] PROGMEM= "OFF";
+	char line_text[16];
+	// lcd.setCursor(1,0);
+	snprintf_P(line_text, sizeof(line_text), PSTR("Enable: %s"), exaustor_acionado? ON : OFF);
+	Serial.println(line_text);
+	
+	// lcd.setCursor(0,1);
+	snprintf_P(line_text, sizeof(line_text), PSTR("State: %s"), get_value(EXA_STATE) ? ON : OFF);
+	Serial.println(line_text);
+}
+
+void navigateExa(){
+	menu_location = HOME_EXHAUSTER;
+	show_exhauster_data();
+}
+
+void enable_disable_exa(){
+	exaustor_acionado = !exaustor_acionado;
+	if(get_value(EXA_STATE)==1){
+		set_value(0, EXA_STATE);
+		digitalWrite(led_exaustor, LOW);
+	}
+	show_exhauster_data();
+}
+
+
+
+void button_router(void *pv){
   
-//   int data;
+	uint8_t pressed_button;
+	static void (*actions[4]) ();
 
-//   for(;;){
-//     if( xQueueReceive( button_press, &data, portMAX_DELAY) == pdPASS ){
-// 		Serial.println("IN TASK");
-// 			Serial.println(data);
-// 		}
-// 	}
+  for(;;){
+    if( xQueueReceive( button_press, &pressed_button, portMAX_DELAY) == pdPASS ){
+			switch (menu_location){
+				case HOME_LIGHT:
 
-// }
+					actions[UP] = navigateUmi; // navegar umidade 
+					actions[DOWN] = navigateExa; //navegar para exaustao
+					actions[LEFT] = enable_disable_light; //ativar e desativar light 
+					actions[RIGHT] = navigateConfigLight; // naegar para config luz 
 
+					actions[pressed_button]();
+					break;
+				
+				// case CONFIG_LIGHT_TIME:
+				// 	actions[UP]  = addLightTime; // add light time
+				// 	actions[DOWN]  = subLightTime; // sub dark time
+				// 	actions[LEFT]  = navigateConfigDark; // ir pra config dark time
+				// 	if(pressed_button!=RIGHT)
+				// 		actions[pressed_button]();
+				// 	break;
+
+				
+				// case CONFIG_DARK_TIME:
+				// 	actions[UP] = addDarkTime; // add dark time
+				// 	actions[DOWN] = subDarkTime; // sub dark time
+				// 	actions[LEFT] = navigateLight; // voltar para tela de luz
+					
+				// 	if(pressed_button!=RIGHT)
+				// 		actions[pressed_button]();
+				// 	break;
+				
+				// case HOME_HUMIDITY:
+				// 	actions[UP] = navigateExa; // navegar exatusao
+				// 	actions[DOWN] = navigateLight; // navegar para luz 
+				// 	actions[LEFT] = enable_disable_humidity;// habiiltear e desabilitar 
+				// 	actions[RIGHT] = show_config_h_data; // ir para configurar umi OK
+				// 	actions[pressed_button]();
+				// 	break;
+				
+				// case CONFIG_HUMIDITY:
+				// 	actions[UP] = addHumidity; // add umidade OK
+				// 	actions[DOWN] = subHumidity; // sub umidade OK
+				// 	actions[LEFT] = navigateUmi; // habiiltear e desabilitar OK
+					
+				// 	if(pressed_button!=RIGHT)
+				// 		actions[pressed_button]();
+				// 	break;
+				
+				// case HOME_EXHAUSTER:
+				// 	actions[UP] = navigateLight; // add umidade OK
+				// 	actions[DOWN] = navigateUmi; // sub umidade OK
+				// 	actions[LEFT] = navigateUmi; // habiiltear e desabilitar OK
+					
+				// 	if(pressed_button!=RIGHT)
+				// 		actions[pressed_button]();
+				// 	break;
+				
+				
+
+				default:
+					break;
+			}
+	}
+
+}
+}
 //função para ser chamada no setup do arduino
 void buttons_setup(){
 		configureCommon();
     attachInterrupt(digitalPinToInterrupt(INTERRUPT), button_interrupt, FALLING);
 
-		// xTaskCreate(
-    //     testTask, // Task function
-    //     "testTask", // Task name for humans
-    //     128, 
-    //     NULL, // Task parameter
-    //     1, // Task priority
-    //     NULL
-    // );
+		xTaskCreate(
+        button_router, // Task function
+        "testTask", // Task name for humans
+        128, 
+        NULL, // Task parameter
+        1, // Task priority
+        NULL
+    );
 }
 
 #endif
