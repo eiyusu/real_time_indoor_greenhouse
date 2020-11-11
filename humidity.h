@@ -100,7 +100,7 @@ void leitura_umidade(void *arg){
 }
 
 //Setup inicial do sistema
-void setup_humidity(){
+void humidity_setup(){
     pinMode(led_su, OUTPUT);
     pinMode(led_bomba, OUTPUT);
 

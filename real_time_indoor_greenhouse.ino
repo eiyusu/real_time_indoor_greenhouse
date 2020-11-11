@@ -20,7 +20,7 @@ void imprimir(char *name, unsigned long value) {
 #include "humidity.h"
 #include "exhauster.h"
 #include "buttons.h"
-// #include "ldr.h"
+#include "ldr.h"
 
 
 // função para testar interrupção por botao
@@ -43,9 +43,10 @@ void setup() {
 
     //setup do sistema de iluminação
     light_setup();
+    ldr_setup();
 
     //setup do sistema de umidade
-    setup_humidity();
+    // humidity_setup();
 
     //setup do sistema de exaustao 
     exa_setup();

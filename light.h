@@ -14,7 +14,7 @@
 uint16_t times[2] = { pdMS_TO_TICKS(500), pdMS_TO_TICKS(2000)}; // tempos em cada estado
 TimerHandle_t light_timer; // timer do sistema 
 
-static bool enableLight = false; // status se o sistema está ativo ou não
+static bool enableLight = true; // status se o sistema está ativo ou não
 static bool current_light_state = DARK; // estado atual do sistema (CLARO OU ESCURO)
 QueueHandle_t enable_disable_Q = xQueueCreate(1, sizeof(bool)); // fila de comunicação para atiação e desatiação do sistema
 
