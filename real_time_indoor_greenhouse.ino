@@ -49,10 +49,6 @@ void setup() {
     //Inicializa monitor
     monitor_start();
 
-    //set_value(0, EXA_STATE);
-    //set_value(0, EXA_IRRIGATION);
-
-
     //setup do sistema de iluminação
     light_setup();
 

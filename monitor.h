@@ -16,7 +16,7 @@
 #define PIN_EXAUSTOR 2
 
 //tamanho do vetor de mutex
-#define SIZE 4
+#define SIZE 7
 
 SemaphoreHandle_t mutex[SIZE];
 static uint8_t secureValues[SIZE];

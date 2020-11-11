@@ -29,7 +29,7 @@ void leitura_ldre(void *arg){
                 //unlock(PIN_ILUMINACAO);
             }
             // Se estiver escuro e o estado for claro
-            else if((map(analogRead(sensor_ldr), 0, 1023, 0, 100)<>=>LIMITE) && current_light_state == 1){
+            else if((map(analogRead(sensor_ldr), 0, 1023, 0, 100)<LIMITE) && current_light_state == 1){
                 // Monitor
                 //lock(PIN_ILUMINACAO);
                 light_turn_on();
