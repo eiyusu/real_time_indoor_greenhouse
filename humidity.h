@@ -21,7 +21,7 @@ TaskHandle_t        leitura_umidadeH;
 
 // Task de leitura e tratamento da umidade
 void leitura_umidade(void *arg){
-    unsigned int init_time, end_time, resp_time; 
+    unsigned long int init_time, end_time, resp_time; 
     while(1) {
         if(umidade_acionada){
             init_time = millis();

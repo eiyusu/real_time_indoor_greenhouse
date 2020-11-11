@@ -13,7 +13,7 @@ extern bool exaustor_acionado;
 TaskHandle_t        exaustorH;
 
 void exaustor(void *arg){
-    unsigned int init_time, end_time, resp_time; 
+    unsigned long int init_time, end_time, resp_time; 
     while(1){
         if(exaustor_acionado){
             init_time = millis();

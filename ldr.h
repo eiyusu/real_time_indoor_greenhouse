@@ -10,16 +10,16 @@ extern int minuto;
 extern void imprimir(char *name, int8_t value);
 extern bool current_light_state;
 extern void light_turn_on(), void light_turn_off();
-extern bool iluminacao_acionada;
+extern bool enableLight;
 
 // Task LDR
 TaskHandle_t        leitura_ldrH;
 
 // Task de leitura do LDR
 void leitura_ldre(void *arg){
-    unsigned int init_time, end_time, resp_time; 
+    unsigned long int init_time, end_time, resp_time; 
     while(1) {
-        if(iluminacao_acionada){
+        if(enableLight){
             init_time = millis();
             // Se estiver claro e estado atual for escuro
             if((map(analogRead(sensor_ldr), 0, 1023, 0, 100)>=LIMITE) && current_light_state == 0){
