@@ -54,7 +54,7 @@ void setup() {
     light_setup();
 
     //setup do sistema de umidade
-    setup_humidity();
+    //setup_humidity();
 
     //setup do sistema de exaustao 
     exa_setup();

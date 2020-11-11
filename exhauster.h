@@ -5,7 +5,7 @@
 #include "monitor.h"
 
 //Variáveis do exaustor
-#define led_exaustor 12
+#define led_exaustor 2
 
 extern int t_exaustor;
 extern bool exaustor_acionado;
