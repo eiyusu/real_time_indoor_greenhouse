@@ -15,7 +15,6 @@ extern int config_umidade;
 extern bool umidade_acionada;
 extern int umidade;
 extern int minuto;
-extern void imprimir(char *name, int8_t value);
 
 TaskHandle_t        leitura_umidadeH;
 

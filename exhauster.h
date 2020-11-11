@@ -16,7 +16,7 @@ void exaustor(void *arg){
     unsigned long int init_time, end_time, resp_time; 
     while(1){
         if(exaustor_acionado){
-            init_time = millis();
+            init_time = micros();
             // digitalWrite no exaustor deve seguir a exclusão mútua com prioridade para a umidade (fazer no monitor)
             if(get_value(EXA_STATE)==1 && get_value(EXA_IRRIGATION)==0){
                 set_value(0, EXA_STATE);
@@ -28,9 +28,9 @@ void exaustor(void *arg){
                 digitalWrite(led_exaustor, HIGH);
                 Serial.println("Ligar Exaustor"); 
             }
-            end_time = millis();
+            end_time = micros();
             resp_time = end_time - init_time;
-            imprimir("Resposta Exaustor (ms)", resp_time);
+            imprimir("Resposta Exaustor (us)", resp_time);
             vTaskDelay(t_exaustor);
         }   
     }

@@ -5,6 +5,16 @@
 #include <semphr.h>
 #include "task.h"
 
+
+void imprimir(char *name, unsigned long value) {
+       Serial.print("\t\t");
+       Serial.print(name);
+       Serial.print(": ");
+       Serial.print(value);
+       Serial.print("\n");
+}
+ 
+
 #include "monitor.h"
 #include "light.h"
 #include "humidity.h"
@@ -31,14 +41,7 @@ int umidade = 0;
 int t_exaustor = minuto;
 bool exa_on = false, exaustor_acionado = true;
  
-void imprimir(char *name, int8_t value) {
-       Serial.print("\t\t");
-       Serial.print(name);
-       Serial.print(": ");
-       Serial.print(value);
-       Serial.print("\n");
-}
- 
+
 void setup() {
     //Inicializa Serial
     Serial.begin(115200);
@@ -54,7 +57,7 @@ void setup() {
     light_setup();
 
     //setup do sistema de umidade
-    //setup_humidity();
+    setup_humidity();
 
     //setup do sistema de exaustao 
     exa_setup();
