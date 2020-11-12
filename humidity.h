@@ -5,7 +5,7 @@
 
 
 //Variáveis de umidade
-#define led_bomba 4
+#define led_bomba 7
 #define sensor_umidade A0
 #define led_exaustor 6
 #define t_humidity 10000/portTICK_PERIOD_MS
@@ -50,18 +50,18 @@ void leitura_umidade(void *arg){
                 snprintf_P(line_text, sizeof(line_text), PSTR("Umi. Baixa: %u%%"), umidade);
                 Serial.println(line_text); 
                 // Reserva recurso BOMBA, liga a bomba e avisa que ela foi ligada, depois libera
-                lock(PIN_BOMBA);
+                //lock(PIN_BOMBA);
                 digitalWrite(led_bomba, HIGH);  
                 bomba_acionada = true;          
                 Serial.println("\t\tBomba ligada"); 
-                unlock(PIN_BOMBA);
+                //unlock(PIN_BOMBA);
                 vTaskDelay(t_humidity);                     //Bloqueia a task por uma período para retornar e desligar a bomba
                 // Reserva recurso BOMBA, liga a bomba e avisa que ela foi ligada, depois libera
-                lock(PIN_BOMBA);
+                //lock(PIN_BOMBA);
                 digitalWrite(led_bomba, LOW);    
                 bomba_acionada = false;        
                 Serial.println("\t\tBomba desligada");
-                unlock(PIN_BOMBA); 
+                //unlock(PIN_BOMBA); 
             }       
             
             //Liga exaustor
@@ -71,26 +71,26 @@ void leitura_umidade(void *arg){
                 Serial.println(line_text); 
                 
                 // EXA_IRRIGATION indica que umidade vai assumir a exaustão
-                set_value(1, EXA_IRRIGATION);  
+                set_value(2, EXA_IRRIGATION);  
                 
                 // Verifica se o exaustor está desligado para ligá-lo    
                 if(get_value(EXA_STATE)==0){ 
                     set_value(1, EXA_STATE);
                     // Reserva recurso exaustor, liga e libera
-                    lock(PIN_EXAUSTOR);
+                    //lock(PIN_EXAUSTOR);
                     digitalWrite(led_exaustor, HIGH);
                     Serial.println("\t\t[Umidade] Exaustor ligado"); 
-                    unlock(PIN_EXAUSTOR);
+                    //unlock(PIN_EXAUSTOR);
                 }
                 vTaskDelay(t_humidity);     //Bloqueia a task por um período mantento exaustor ligado
                 
                 // Reserva recurso exaustor, desliga e libera. Em seguisa muda variável indicando que umidade não está mais no controle
-                lock(PIN_EXAUSTOR);
+                //lock(PIN_EXAUSTOR);
                 digitalWrite(led_exaustor, LOW);
                 Serial.println("\t\t[Umidade] Exaustor desligado"); 
                 set_value(0, EXA_STATE);
-                unlock(PIN_EXAUSTOR);
-                set_value(0, EXA_IRRIGATION);
+                //unlock(PIN_EXAUSTOR);
+                set_value(1, EXA_IRRIGATION);
                 // A umidade não desliga o exaustor porque porque se a task de mudar estado do exaustor chegar, ele faz a troca imediatamente 
                 // ligando o exaustor logo após a umidade desligar
             }       

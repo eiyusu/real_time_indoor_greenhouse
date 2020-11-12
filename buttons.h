@@ -131,25 +131,25 @@ void navigateConfigDark(){
 
 void addLightTime(){
   // Tempos em millisegundo adicionados, cada aperto soma 30min
-  times[LIGHT]/60000>=43200000/60000 ? NULL : times[LIGHT]+=1800000;
+  times[LIGHT]/60000>=43200000/60000 ? NULL : times[LIGHT]+=60000;
   navigateConfigLight();
 }
 
 void subLightTime(){
   // Tempos em millisegundo, cada aperto subtrai 30min
-  times[LIGHT]/60000<= 0 ? NULL : times[LIGHT]-=1800000;
+  times[LIGHT]/60000<= 0 ? NULL : times[LIGHT]-=60000;
   navigateConfigLight();
 }
 
 void addDarkTime(){
   // Tempos em millisegundo adicionados, cada aperto soma 30min
-  times[DARK]/60000>=43200000/60000 ? NULL : times[DARK]+=1800000;
+  times[DARK]/60000>=43200000/60000 ? NULL : times[DARK]+=60000; //1800000
   navigateConfigDark();
 }
 
 void subDarkTime(){
   // Tempos em millisegundo, cada aperto subtrai 30min
-  times[DARK]/60000<=0 ? NULL : times[DARK]-=1800000;
+  times[DARK]/60000<=0 ? NULL : times[DARK]-=60000;
   navigateConfigDark();
 }
 
@@ -183,11 +183,11 @@ void enable_disable_humidity(){
     digitalWrite(led_bomba, LOW);
   }
   if(get_value(EXA_IRRIGATION)==1){
-    lock(PIN_EXAUSTOR);
+    //lock(PIN_EXAUSTOR);
     digitalWrite(led_exaustor, LOW);
     set_value(0, EXA_STATE);
     set_value(0, EXA_IRRIGATION);
-    unlock(PIN_EXAUSTOR);
+    //unlock(PIN_EXAUSTOR);
   }
   show_humidity_data();
 }

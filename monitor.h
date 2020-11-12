@@ -10,12 +10,12 @@
 #define EXA_STATE 2
 #define EXA_IRRIGATION 3
 
-#define PIN_ILUMINACAO 4
-#define PIN_BOMBA 5
-#define PIN_EXAUSTOR 6
+//#define PIN_ILUMINACAO 4
+//#define PIN_BOMBA 5
+//#define PIN_EXAUSTOR 6
 
 //tamanho do vetor de mutex
-#define SIZE 7
+#define SIZE 4
 
 SemaphoreHandle_t mutex[SIZE];
 static uint8_t secureValues[SIZE];

@@ -44,7 +44,7 @@ void setup() {
     humidity_setup();
 
     //setup do sistema de exaustao 
-    //exa_setup();
+    exa_setup();
 
     // Serial.println("SETUP");
 }

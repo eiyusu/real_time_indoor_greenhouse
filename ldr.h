@@ -32,9 +32,9 @@ void leitura_ldr(void *arg){
                 snprintf_P(line_text, sizeof(line_text), PSTR("LDR: change"));
                 Serial.println(line_text); 
                 // Monitor
-                lock(PIN_ILUMINACAO);
+                //lock(PIN_ILUMINACAO);
                 light_turn_off();
-                unlock(PIN_ILUMINACAO);
+                //unlock(PIN_ILUMINACAO);
             }
             // Se estiver escuro e o estado for claro
             else if(a_read_ldr() < LIMITE && current_light_state == 1){
@@ -42,9 +42,9 @@ void leitura_ldr(void *arg){
                 snprintf_P(line_text, sizeof(line_text), PSTR("LDR: change"));
                 Serial.println(line_text); 
                 // Monitor
-                lock(PIN_ILUMINACAO);
+                //lock(PIN_ILUMINACAO);
                 light_turn_on();
-                unlock(PIN_ILUMINACAO);
+                //unlock(PIN_ILUMINACAO);
             }
             else{
                 char line_text[16];

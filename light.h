@@ -11,7 +11,7 @@
 #define LIGHT 1 // posição no vetor para o tempo de claro
 
 //Pegar isso no monitor
-unsigned long times[2] = { 5000, 5000}; // tempos em cada estado (ms)
+unsigned long times[2] = { 60000, 60000}; // tempos em cada estado (ms)
 TimerHandle_t light_timer; // timer do sistema 
 
 static bool enableLight = false; // status se o sistema está ativo ou não
@@ -35,11 +35,14 @@ void light_turn_off(){
   Mudar o valor do timer para o valor do estado correspondente
 */
 void light_state_toggle(TimerHandle_t xTimer){
+  unsigned long l_time = micros(); 
   digitalWrite(LIGHTPIN, !current_light_state); // ***mudar para uma  função do monitor se o ldr tbm for usar
   current_light_state = !current_light_state; //alterando o estado atual
   Serial.print("changing current_light_state to: ");
   Serial.println(current_light_state ? "LIGHT" : "DARK");
   xTimerChangePeriod(xTimer, pdMS_TO_TICKS(times[current_light_state]), 0);//alterar valor do timer
+  l_time = micros()-l_time;
+  imprimir(F("Resposta Ilumincação (us)"), l_time);
 }
 
 
