@@ -11,7 +11,7 @@
 #define LIGHT 1 // posição no vetor para o tempo de claro
 
 //Pegar isso no monitor
-unsigned long times[2] = { 5000, 5000}; // tempos em cada estado
+unsigned long times[2] = { 5000, 5000}; // tempos em cada estado (ms)
 TimerHandle_t light_timer; // timer do sistema 
 
 static bool enableLight = true; // status se o sistema está ativo ou não

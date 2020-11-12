@@ -28,24 +28,24 @@ void imprimir(const __FlashStringHelper*name, unsigned long value) {
 void setup() {
     //Inicializa Serial
     Serial.begin(115200);
-
+    pinMode(led_su, OUTPUT);
+    pinMode(led_bomba, OUTPUT);
+    pinMode(led_exaustor, OUTPUT);
     //Inicializa monitor
-    // monitor_start();
+    monitor_start();
 
-    // light_setup();
+    light_setup();
     buttons_setup();
-    //set_value(0, EXA_STATE);
-    //set_value(0, EXA_IRRIGATION);
 
 
     //setup do sistema de iluminação
-    // ldr_setup();
+    //ldr_setup();
 
     //setup do sistema de umidade
-    // humidity_setup();
+    humidity_setup();
 
     //setup do sistema de exaustao 
-    // exa_setup();
+    //exa_setup();
 
     // Serial.println("SETUP");
 }
