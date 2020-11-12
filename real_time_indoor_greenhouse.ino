@@ -28,7 +28,6 @@ void imprimir(const __FlashStringHelper*name, unsigned long value) {
 void setup() {
     //Inicializa Serial
     Serial.begin(115200);
-    pinMode(led_su, OUTPUT);
     pinMode(led_bomba, OUTPUT);
     pinMode(led_exaustor, OUTPUT);
     //Inicializa monitor
@@ -39,7 +38,7 @@ void setup() {
 
 
     //setup do sistema de iluminação
-    //ldr_setup();
+    ldr_setup();
 
     //setup do sistema de umidade
     humidity_setup();

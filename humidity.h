@@ -6,14 +6,13 @@
 
 //Variáveis de umidade
 #define led_bomba 4
-#define led_su 5
 #define sensor_umidade A0
 #define led_exaustor 6
 #define t_humidity 10000/portTICK_PERIOD_MS
 
 //Variáveis externas
 static uint8_t config_umidade = 50; // apagar
-static bool umidade_acionada = true, bomba_acionada = false;
+static bool umidade_acionada = false, bomba_acionada = false;
 static uint8_t umidade = 0;
 
 
@@ -21,19 +20,18 @@ static uint8_t umidade = 0;
 void leitura_umidade(void *arg){
     
     // unsigned long int init_time, end_time, resp_time; 
-    
+    unsigned long u_time; 
     for(;;) {
 
         //Serial.print("\n\n- TASK ");
         //Serial.print(pcTaskGetName(NULL)); 
         //Serial.print(", High Watermark: ");
         //Serial.print(uxTaskGetStackHighWaterMark(NULL));
-
-
+        
+        u_time = micros();
         if(umidade_acionada){
             // init_time = millis();
-            
-            digitalWrite(led_su, HIGH);     
+                
                       //Acende LED indicador de task em execução       
             // Reserva sensor de leitura da umidade, faz a leitura e libera      
             lock(IRRIGATION);
@@ -48,6 +46,7 @@ void leitura_umidade(void *arg){
             }       
             //Liga bomba
             else if (umidade < config_umidade-5){
+                char line_text[16];
                 snprintf_P(line_text, sizeof(line_text), PSTR("Umi. Baixa: %u%%"), umidade);
                 Serial.println(line_text); 
                 // Reserva recurso BOMBA, liga a bomba e avisa que ela foi ligada, depois libera
@@ -56,7 +55,7 @@ void leitura_umidade(void *arg){
                 bomba_acionada = true;          
                 Serial.println("\t\tBomba ligada"); 
                 unlock(PIN_BOMBA);
-                vTaskDelay(t_humidity/4);                     //Bloqueia a task por uma período para retornar e desligar a bomba
+                vTaskDelay(t_humidity);                     //Bloqueia a task por uma período para retornar e desligar a bomba
                 // Reserva recurso BOMBA, liga a bomba e avisa que ela foi ligada, depois libera
                 lock(PIN_BOMBA);
                 digitalWrite(led_bomba, LOW);    
@@ -67,6 +66,7 @@ void leitura_umidade(void *arg){
             
             //Liga exaustor
             else{
+                char line_text[16];
                 snprintf_P(line_text, sizeof(line_text), PSTR("Umi. Alta: %u%%"), umidade);
                 Serial.println(line_text); 
                 
@@ -82,7 +82,7 @@ void leitura_umidade(void *arg){
                     Serial.println("\t\t[Umidade] Exaustor ligado"); 
                     unlock(PIN_EXAUSTOR);
                 }
-                vTaskDelay(t_humidity/4);     //Bloqueia a task por um período mantento exaustor ligado
+                vTaskDelay(t_humidity);     //Bloqueia a task por um período mantento exaustor ligado
                 
                 // Reserva recurso exaustor, desliga e libera. Em seguisa muda variável indicando que umidade não está mais no controle
                 lock(PIN_EXAUSTOR);
@@ -98,18 +98,19 @@ void leitura_umidade(void *arg){
             // resp_time = end_time - init_time;
             // imprimir("Resposta Umidade (ms)", resp_time);
             
-            digitalWrite(led_su, LOW);                //Desliga LED sinalizador de task 
-            vTaskDelay(t_humidity/4);                       //Bloqueia a task
+            u_time = micros() - u_time;
+            imprimir(F("Resposta Umidade (us)"), u_time);
+            vTaskDelay(t_humidity/2);                       //Bloqueia a task
+
         }
         else{
-            vTaskDelay(t_humidity/4);                       //Bloqueia a task
+            vTaskDelay(t_humidity/2);                       //Bloqueia a task
         }
     }
 }
 
 //Setup inicial do sistema
 void humidity_setup(){
-    pinMode(led_su, OUTPUT);
     pinMode(led_bomba, OUTPUT);
 
     //Crição da task de leitura de umidade

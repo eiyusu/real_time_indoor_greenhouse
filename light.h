@@ -14,7 +14,7 @@
 unsigned long times[2] = { 5000, 5000}; // tempos em cada estado (ms)
 TimerHandle_t light_timer; // timer do sistema 
 
-static bool enableLight = true; // status se o sistema está ativo ou não
+static bool enableLight = false; // status se o sistema está ativo ou não
 static bool current_light_state = DARK; // estado atual do sistema (CLARO OU ESCURO)
 QueueHandle_t enable_disable_Q = xQueueCreate(1, sizeof(bool)); // fila de comunicação para atiação e desatiação do sistema
 
@@ -49,6 +49,7 @@ Quando isso ocorre ela olha esse valor e desabilita ou habilita o timer
 */
 void light_enable_disable( void *pv){
   bool L; //buffer para guardar valor que vem da fila
+  unsigned long l_time; 
   for(;;){
 
     // Serial.print("\n\n- TASK ");
@@ -58,7 +59,7 @@ void light_enable_disable( void *pv){
 
     //Aguardar receber conteudo da fila. Então salvar esse conteudo na variavel L
     if ( xQueueReceive( enable_disable_Q, &L, portMAX_DELAY) == pdPASS) {
-      
+      l_time = micros();
       if(L){
        xTimerStart( light_timer, 0 );
        Serial.println("Iniciou o timer");
@@ -68,6 +69,8 @@ void light_enable_disable( void *pv){
         digitalWrite(LIGHTPIN, LOW); //*** mudar para monitor 
         Serial.println("Parou o timer");
       }
+      l_time = micros()-l_time;
+      imprimir(F("Resposta Ilumincação (us)"), l_time);
     }
   }
 }

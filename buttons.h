@@ -260,9 +260,11 @@ void button_router(void *pv){
   
   uint8_t pressed_button;
   static void (*actions[4]) ();
+  unsigned long b_time;
 
   for(;;){
     if( xQueueReceive( button_press, &pressed_button, portMAX_DELAY) == pdPASS ){
+      b_time = micros();
       if(menu_location==HOME_LIGHT){
         actions[UP] = navigateUmi; // navegar umidade 
         actions[DOWN] = navigateExa; //navegar para exaustao
@@ -308,6 +310,8 @@ void button_router(void *pv){
         if(pressed_button!=RIGHT)
           actions[pressed_button]();
       }
+      b_time = micros() - b_time;
+      imprimir(F("Resposta Menu (us)"), b_time);
   }
 
 }
@@ -325,6 +329,8 @@ void buttons_setup(){
         2, // Task priority
         NULL
     );
+
+    show_light_data();
 }
 
 #endif

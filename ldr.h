@@ -19,15 +19,18 @@ void leitura_ldr(void *arg){
     
     for(;;) {
 
-        Serial.print("\n\n- TASK ");
-        Serial.print(pcTaskGetName(NULL)); 
-        Serial.print(", High Watermark: ");
-        Serial.print(uxTaskGetStackHighWaterMark(NULL));
-        
+        // Serial.print("\n\n- TASK ");
+        // Serial.print(pcTaskGetName(NULL));
+        // Serial.print(", High Watermark: ");
+        // Serial.print(uxTaskGetStackHighWaterMark(NULL));
+
         if(enableLight){
             init_time = micros();
             // Se estiver claro e estado atual for escuro
             if(a_read_ldr() >= LIMITE && current_light_state == 0){
+                char line_text[16];
+                snprintf_P(line_text, sizeof(line_text), PSTR("LDR: change"));
+                Serial.println(line_text); 
                 // Monitor
                 lock(PIN_ILUMINACAO);
                 light_turn_off();
@@ -35,14 +38,25 @@ void leitura_ldr(void *arg){
             }
             // Se estiver escuro e o estado for claro
             else if(a_read_ldr() < LIMITE && current_light_state == 1){
+                char line_text[16];
+                snprintf_P(line_text, sizeof(line_text), PSTR("LDR: change"));
+                Serial.println(line_text); 
                 // Monitor
                 lock(PIN_ILUMINACAO);
                 light_turn_on();
                 unlock(PIN_ILUMINACAO);
             }
+            else{
+                char line_text[16];
+                snprintf_P(line_text, sizeof(line_text), PSTR("LDR: OK"));
+                Serial.println(line_text); 
+            }
             // Fora esses dois casos, não precisa de mais atuação
             init_time = micros() - init_time;
             imprimir(F("Resposta LDR (us)"), init_time);
+            vTaskDelay(t_ldr);                       //Bloqueia a task
+        }
+        else{
             vTaskDelay(t_ldr);                       //Bloqueia a task
         }
     }
