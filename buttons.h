@@ -31,14 +31,12 @@
 #define CONFIG_HUMIDITY 4
 #define HOME_EXHAUSTER 5
 
-
+static uint8_t menu_location = HOME_LIGHT;
 
 const uint8_t buttons_pins[4]  = {UPPIN, DOWNPIN, LEFTPIN, RIGHTPIN};
 unsigned long lastFire = 0; //Evitar leituras múltiplas 
 QueueHandle_t button_press = xQueueCreate(1, sizeof(uint8_t));
 BaseType_t qparameter = pdTRUE;
-
-static uint8_t menu_location = HOME_LIGHT;
 
 
 void configureDistinct() {
@@ -82,17 +80,17 @@ void button_interrupt(){
 void show_light_data(){
   const char ON[] PROGMEM= "ON";
   const char OFF[] PROGMEM= "OFF";
-  const char LI[] PROGMEM= "LIGHT";
-  const char DA[] PROGMEM= "DARK";
+  const char LI[] PROGMEM= "LUZ";
+  const char DA[] PROGMEM= "ESCURO";
 
-  char line_text[16];
-  // lcd.setCursor(1,0);
-  snprintf_P(line_text, sizeof(line_text), PSTR("[I] Enable: %s"), enableLight? ON : OFF);
-  Serial.println(line_text);
   
-  // lcd.setCursor(0,1);
-  snprintf_P(line_text, sizeof(line_text), PSTR("State: %s"), current_light_state ? LI  : DA);
-  Serial.println(line_text);
+  
+  Serial.print(F("\n\n\t\t-----ILUMINACAO-----\n"));
+  Serial.print(F("\t\tATIVADO: "));
+  Serial.print(enableLight? ON : OFF);
+  Serial.print(F("\n\t\tESTADO ATUAL: "));
+  Serial.print(current_light_state ? LI  : DA);
+  Serial.print(F("\n\t\t--------------------\n\n"));
 
 }
 
@@ -109,24 +107,34 @@ void navigateLight(){
 
 void navigateConfigLight(){
 	if(!enableLight){
-		char line_text[16];
 		menu_location = CONFIG_LIGHT_TIME;
-		snprintf_P(line_text, sizeof(line_text), PSTR("L: %lu m"), times[LIGHT]/60000);
-		Serial.println(line_text);
+
+    
+    
+    Serial.print(F("\n\n\t\t----CONFIG>TEMPO----\n"));
+    Serial.print(F("\t\tLUZ: "));
+    Serial.print(times[LIGHT]/60000);
+    Serial.print(F(" min"));
+    Serial.print(F("\n\t\t---------------------\n\n"));
 	}
 	else{
-		char line_text[16];
-		snprintf_P(line_text, sizeof(line_text), PSTR("System not OFF"));
-		Serial.println(line_text);
+    
+    
+		Serial.print(F("\n\n\t\t----CONFIG>TEMPO----\n"));
+    Serial.print(F("\t\tPROIBIDO-->SIS. ACIONADO"));
+    Serial.print(F("\n\t\t---------------------\n\n"));
 	}
 }
 
 void navigateConfigDark(){
-  char line_text[16];
   menu_location = CONFIG_DARK_TIME; 
-  // lcd.setCursor(0,1);
-  snprintf_P(line_text, sizeof(line_text), PSTR("D: %lu m"), times[DARK]/60000);
-  Serial.println(line_text);
+ 
+  
+  Serial.print(F("\n\n\t\t----CONFIG>TEMPO----\n"));
+  Serial.print(F("\t\tESCURO: "));
+  Serial.print(times[DARK]/60000);
+  Serial.print(F(" min"));
+  Serial.print(F("\n\t\t---------------------\n\n"));
 }
 
 void addLightTime(){
@@ -137,7 +145,7 @@ void addLightTime(){
 
 void subLightTime(){
   // Tempos em millisegundo, cada aperto subtrai 30min
-  times[LIGHT]/60000<= 0 ? NULL : times[LIGHT]-=60000;
+  times[LIGHT]/60000<= 1 ? NULL : times[LIGHT]-=60000;
   navigateConfigLight();
 }
 
@@ -149,7 +157,7 @@ void addDarkTime(){
 
 void subDarkTime(){
   // Tempos em millisegundo, cada aperto subtrai 30min
-  times[DARK]/60000<=0 ? NULL : times[DARK]-=60000;
+  times[DARK]/60000<=1 ? NULL : times[DARK]-=60000;
   navigateConfigDark();
 }
 
@@ -158,14 +166,17 @@ void subDarkTime(){
 void show_humidity_data(){
   const char ON[] PROGMEM= "ON";
   const char OFF[] PROGMEM= "OFF";
-  char line_text[16];
-  // lcd.setCursor(1,0);
-  snprintf_P(line_text, sizeof(line_text), PSTR("[U] Enable: %s"), umidade_acionada ?  ON : OFF);
-  Serial.println(line_text);
   
-  // lcd.setCursor(0,1);
-  snprintf_P(line_text, sizeof(line_text), PSTR("H: %u%% B:%s"), umidade, bomba_acionada ?  ON : OFF);
-  Serial.println(line_text);  
+  
+  Serial.print(F("\n\n\t\t-------UMIDADE-------\n"));
+  Serial.print(F("\t\tATIVADO: "));
+  Serial.print(umidade_acionada? ON : OFF);
+  Serial.print(F("\n\t\tHUMIDADE LIDA: "));
+  Serial.print(umidade);
+  Serial.print(F("%"));
+  Serial.print(F("\n\t\tESTADO DA BOMBA: "));
+  Serial.print(bomba_acionada ?  ON : OFF);
+  Serial.print(F("\n\t\t---------------------\n\n"));
 
 }
 
@@ -194,25 +205,23 @@ void enable_disable_humidity(){
 
 void show_config_h_data(){
   
-  char line_text[16];
-	// lcd.setCursor(1,0);
-  snprintf_P(line_text, sizeof(line_text), PSTR("Valor Desejado:"));
-  Serial.println(line_text);
-
-  // lcd.setCursor(0,1);
-  snprintf_P(line_text, sizeof(line_text), PSTR("> %u%%"), config_umidade);
-  Serial.println(line_text);
+  Serial.print(F("\n\n\t\t---CONFIG>UMIDADE----\n"));
+  Serial.print(F("\t\tVALOR DESEJADO: "));
+  Serial.print(config_umidade);
+  Serial.print(F("%"));
+  Serial.print(F("\n\t\t---------------------\n\n"));
 }
 
 void navigateConfigHumidity(){
   if(!umidade_acionada){
-	menu_location = CONFIG_HUMIDITY;
+  	menu_location = CONFIG_HUMIDITY;
   	show_config_h_data();
   }
   else{
-	char line_text[16];
-	snprintf_P(line_text, sizeof(line_text), PSTR("System not OFF"));
-  	Serial.println(line_text); 
+    
+  	Serial.print(F("\n\n\t\t----CONFIG>UMIDADE---\n"));
+    Serial.print(F("\t\tPROIBIDO-->SIS. ACIONADO"));
+    Serial.print(F("\n\t\t---------------------\n\n"));
   }
 }
 
@@ -230,14 +239,13 @@ void subHumidity(){
 void show_exhauster_data(){
   const char ON[] PROGMEM= "ON";
   const char OFF[] PROGMEM= "OFF";
-  char line_text[16];
-  // lcd.setCursor(1,0);
-  snprintf_P(line_text, sizeof(line_text), PSTR("[E] Enable: %s"), exaustor_acionado? ON : OFF);
-  Serial.println(line_text);
   
-  // lcd.setCursor(0,1);
-  snprintf_P(line_text, sizeof(line_text), PSTR("State: %s"), get_value(EXA_STATE) ? ON : OFF);
-  Serial.println(line_text);
+  Serial.print(F("\n\n\t\t-------EXAUSTAO------\n"));
+  Serial.print(F("\t\tATIVADO: "));
+  Serial.print(exaustor_acionado? ON : OFF);
+  Serial.print(F("\n\t\tESTADO VENTILADOR: "));
+  Serial.print(get_value(EXA_STATE) ?  ON : OFF);
+  Serial.print(F("\n\t\t---------------------\n\n"));
 }
 
 void navigateExa(){
@@ -260,11 +268,11 @@ void button_router(void *pv){
   
   uint8_t pressed_button;
   static void (*actions[4]) ();
-  unsigned long b_time;
+  // unsigned long b_time;
 
   for(;;){
     if( xQueueReceive( button_press, &pressed_button, portMAX_DELAY) == pdPASS ){
-      b_time = micros();
+      // b_time = micros();
       if(menu_location==HOME_LIGHT){
         actions[UP] = navigateUmi; // navegar umidade 
         actions[DOWN] = navigateExa; //navegar para exaustao
@@ -310,8 +318,8 @@ void button_router(void *pv){
         if(pressed_button!=RIGHT)
           actions[pressed_button]();
       }
-      b_time = micros() - b_time;
-      imprimir(F("Resposta Menu (us)"), b_time);
+      // b_time = micros() - b_time;
+      // imprimir(F("Resposta Menu (us)"), b_time);
   }
 
 }
@@ -323,7 +331,7 @@ void buttons_setup(){
 
     xTaskCreate(
         button_router, // Task function
-        "testTask", // Task name for humans
+        NULL, // Task name for humans
         128, 
         NULL, // Task parameter
         2, // Task priority

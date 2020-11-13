@@ -10,10 +10,6 @@
 #define EXA_STATE 2
 #define EXA_IRRIGATION 3
 
-//#define PIN_ILUMINACAO 4
-//#define PIN_BOMBA 5
-//#define PIN_EXAUSTOR 6
-
 //tamanho do vetor de mutex
 #define SIZE 4
 
@@ -39,7 +35,7 @@ void set_value(uint8_t value, uint8_t variable){
   xSemaphoreGive(mutex[variable]);
 }
 
-//Ler algum valor de uma variael compartilhada
+//Ler algum valor de uma variavel compartilhada
 uint8_t get_value( uint8_t variable){
   uint8_t aux;
   xSemaphoreTake( mutex[variable], portMAX_DELAY );

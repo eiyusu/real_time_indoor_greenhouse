@@ -13,13 +13,13 @@ void imprimir(const __FlashStringHelper*name, unsigned long value) {
        Serial.print(value);
        Serial.print("\n");
 }
- 
+
 
 #include "monitor.h"
+#include "buttons.h"
 #include "light.h"
 #include "humidity.h"
 #include "exhauster.h"
-#include "buttons.h"
 #include "ldr.h"
 
 
@@ -28,14 +28,15 @@ void imprimir(const __FlashStringHelper*name, unsigned long value) {
 void setup() {
     //Inicializa Serial
     Serial.begin(115200);
-    pinMode(led_bomba, OUTPUT);
-    pinMode(led_exaustor, OUTPUT);
+    
     //Inicializa monitor
     monitor_start();
 
+    //setup do sistema de iluminação
     light_setup();
-    buttons_setup();
 
+    //setup menu e reconhecimento de botoes
+    buttons_setup();
 
     //setup do sistema de iluminação
     ldr_setup();

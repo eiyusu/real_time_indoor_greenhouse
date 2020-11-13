@@ -10,6 +10,13 @@
 #define DARK 0 // posição no vetor para o tempo de escuro
 #define LIGHT 1 // posição no vetor para o tempo de claro
 
+#ifndef HOME_LIGHT
+#define HOME_LIGHT 0
+#endif
+
+extern uint8_t menu_location;
+extern void show_light_data();
+
 //Pegar isso no monitor
 unsigned long times[2] = { 60000, 60000}; // tempos em cada estado (ms)
 TimerHandle_t light_timer; // timer do sistema 
@@ -35,14 +42,17 @@ void light_turn_off(){
   Mudar o valor do timer para o valor do estado correspondente
 */
 void light_state_toggle(TimerHandle_t xTimer){
-  unsigned long l_time = micros(); 
+  // unsigned long l_time = micros(); 
+
   digitalWrite(LIGHTPIN, !current_light_state); // ***mudar para uma  função do monitor se o ldr tbm for usar
   current_light_state = !current_light_state; //alterando o estado atual
-  Serial.print("changing current_light_state to: ");
-  Serial.println(current_light_state ? "LIGHT" : "DARK");
+  
   xTimerChangePeriod(xTimer, pdMS_TO_TICKS(times[current_light_state]), 0);//alterar valor do timer
-  l_time = micros()-l_time;
-  imprimir(F("Resposta Ilumincação (us)"), l_time);
+
+  if(menu_location==HOME_LIGHT) show_light_data();
+
+  // l_time = micros()-l_time;
+  // imprimir(F("Resposta Ilumincação (us)"), l_time);
 }
 
 
@@ -62,49 +72,33 @@ void light_enable_disable( void *pv){
 
     //Aguardar receber conteudo da fila. Então salvar esse conteudo na variavel L
     if ( xQueueReceive( enable_disable_Q, &L, portMAX_DELAY) == pdPASS) {
-      l_time = micros();
+      // l_time = micros();
       if(L){
        xTimerStart( light_timer, 0 );
-       Serial.println("Iniciou o timer");
+       current_light_state = LIGHT;
+        light_turn_on();
       }
       else{
         xTimerStop( light_timer, 0 );
-        digitalWrite(LIGHTPIN, LOW); //*** mudar para monitor 
-        Serial.println("Parou o timer");
+        current_light_state = DARK;
+        light_turn_off();
       }
-      l_time = micros()-l_time;
-      imprimir(F("Resposta Ilumincação (us)"), l_time);
+
+      if(menu_location==HOME_LIGHT) show_light_data();
+
+      // l_time = micros()-l_time;
+      // imprimir(F("Resposta Ilumincação (us)"), l_time);
     }
   }
 }
 
-// estrutura do valor que dee ser passado para a fila de mudaça do valor dos tempos de claro e escuro
-struct changeValueData {
-  bool alter_state; // estado sendo alterado
-  uint16_t newValue; // novo valor
-};
-
-void light_change_value(void *pv){
-  
-  struct changeValueData* data; //buffer para guardar valor que vem da fila
-
-  for(;;){
-    //***Tem que ser outra fila e não a mesma que ta usando para desabilitar e habilitar o timer
-    if( xQueueReceive( enable_disable_Q, data, portMAX_DELAY) == pdPASS ){
-      times[data->alter_state] = data->newValue; //mudando valor no vetor
-      if(current_light_state == data->alter_state){
-         xTimerChangePeriod( light_timer, pdMS_TO_TICKS(data->newValue), 0 ); //se o valor sendo mudado é o do estado atual, alterar tbm o timer
-      }
-    }
-  }
-}
 
 void light_setup(){
     pinMode(LIGHTPIN, OUTPUT);
     
     light_timer = xTimerCreate(
-        "lightTimer", //Nome
-        pdMS_TO_TICKS(500), //Periodo
+        NULL, //Nome
+        pdMS_TO_TICKS(60000), //Periodo
         pdTRUE, // repetir
         NULL, // ID do timer
         light_state_toggle // funcao de callback 
@@ -112,7 +106,7 @@ void light_setup(){
 
     xTaskCreate(
         light_enable_disable, // implementação da task
-        "light_s", // nome para debug
+        NULL, // nome para debug
         95, // espaço reservado na memoria
         NULL, // parametro para ser passado para task 
         1, // prioridade da task
